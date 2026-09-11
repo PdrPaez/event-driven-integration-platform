@@ -1,9 +1,10 @@
 import asyncio
 import json
+
 import psycopg
 from aio_pika import connect_robust
-from ..config import settings
 
+from ..config import settings
 from ..schemas.registry import validate_and_upcast
 
 SCENARIOS=["order/outbox atomic creation","happy-path CRM delivery","order fan-out","duplicate broker delivery skipped by inbox","connector idempotency protects duplicate side effect","transient retry succeeds","retry exhaustion dead-letters","permanent failure dead-letters immediately","dead-letter replay succeeds after recovery","valid webhook ingestion","duplicate webhook ingestion","invalid webhook signature","customer v1 upcasts to v2","unsupported future schema","publish-confirm crash-window duplicate"]
