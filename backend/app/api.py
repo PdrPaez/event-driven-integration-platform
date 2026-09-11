@@ -57,6 +57,14 @@ async def outbox(s=Depends(db)): return [{"id":str(o.id),"event_id":str(o.event_
 async def deliveries(s=Depends(db)): return [{"event_id":str(d.event_id),"consumer":d.consumer_name,"attempt":d.attempt,"outcome":d.outcome,"trace":d.trace} for d in (await s.execute(select(Delivery).order_by(desc(Delivery.created_at)).limit(200))).scalars()]
 @router.get("/dead-letters")
 async def dls(s=Depends(db)): return [{"id":str(d.id),"event_id":str(d.event_id),"connector":d.connector,"status":d.status,"attempt":d.final_attempt,"error":d.error_category} for d in (await s.execute(select(DeadLetter).order_by(desc(DeadLetter.created_at)))).scalars()]
+@router.post("/dead-letters/{dead_letter_id}/replay")
+async def replay(dead_letter_id:UUID,s=Depends(db)):
+    dl=await s.get(DeadLetter,dead_letter_id)
+    if not dl: raise HTTPException(404,{"code":"dead_letter_not_found"})
+    if dl.status not in {"open","replay_requested"}: raise HTTPException(409,{"code":"replay_not_allowed"})
+    if await s.execute(select(Inbox).where(Inbox.consumer_name==dl.connector,Inbox.event_id==dl.event_id)).scalar_one_or_none(): raise HTTPException(409,{"code":"already_processed"})
+    dl.status="replay_requested"; row=Outbox(event_id=dl.event_id,routing_key="order.created"); s.add(row); await s.commit()
+    return {"dead_letter_id":str(dl.id),"replay_outbox_id":str(row.id),"event_id":str(dl.event_id),"connector":dl.connector,"status":dl.status}
 @router.get("/connectors")
 async def connectors(s=Depends(db)): return [{"id":k,"display_name":k.title(),"subscribed_event_types":v,"failure_mode":(await s.get(FailureMode,k)).mode if await s.get(FailureMode,k) else "none","queue_name":f"connector.{k}","retry_policy":"3 attempts; 250ms/500ms backoff"} for k,v in SUBSCRIPTIONS.items()]
 @router.put("/demo/connectors/{connector}/failure-mode")

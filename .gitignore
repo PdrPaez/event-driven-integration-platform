@@ -7,4 +7,5 @@ node_modules/
 dist/
 *.pyc
 *.egg-info/
+*.tsbuildinfo
 screenshots/
