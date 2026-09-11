@@ -62,7 +62,8 @@ async def replay(dead_letter_id:UUID,s=Depends(db)):
     dl=await s.get(DeadLetter,dead_letter_id)
     if not dl: raise HTTPException(404,{"code":"dead_letter_not_found"})
     if dl.status not in {"open","replay_requested"}: raise HTTPException(409,{"code":"replay_not_allowed"})
-    if await s.execute(select(Inbox).where(Inbox.consumer_name==dl.connector,Inbox.event_id==dl.event_id)).scalar_one_or_none(): raise HTTPException(409,{"code":"already_processed"})
+    processed=(await s.execute(select(Inbox).where(Inbox.consumer_name==dl.connector,Inbox.event_id==dl.event_id))).scalar_one_or_none()
+    if processed: raise HTTPException(409,{"code":"already_processed"})
     dl.status="replay_requested"; row=Outbox(event_id=dl.event_id,routing_key="order.created"); s.add(row); await s.commit()
     return {"dead_letter_id":str(dl.id),"replay_outbox_id":str(row.id),"event_id":str(dl.event_id),"connector":dl.connector,"status":dl.status}
 @router.get("/connectors")
@@ -82,3 +83,8 @@ async def reset(s=Depends(db)):
 async def schema(body:dict):
     try: p,v=validate_and_upcast(body["event_type"],body["schema_version"],body["payload"]); return {"payload":p.model_dump(mode="json"),"consumed_version":v}
     except ValueError as e: raise HTTPException(422,{"code":"unsupported_schema","message":str(e)})
+@router.post("/evaluation/run")
+async def evaluation():
+    if not settings.demo_mode: raise HTTPException(403,{"code":"demo_mode_required"})
+    from .evaluation.run import SCENARIOS
+    return {"status":"requires_native_postgresql_and_rabbitmq","scenario_count":len(SCENARIOS),"scenarios":SCENARIOS}
