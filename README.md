@@ -1,6 +1,6 @@
 # Event-Driven Integration Platform
 
-A local reference implementation of reliable event-driven integrations using PostgreSQL, RabbitMQ, a transactional outbox, idempotent consumers, bounded retries, dead letters, replay, signed webhook ingress, schema evolution and a real XYFlow delivery canvas.
+A local reference implementation of reliable event-driven integrations using native PostgreSQL 16, RabbitMQ, a transactional outbox, idempotent consumers, bounded retries, dead letters, replay, signed webhook ingress, schema evolution and a real XYFlow delivery canvas.
 
 Publishing a message is easy. Preserving a business event through database commits, broker failures, duplicate delivery, external side effects, retries, poison messages and schema changes is the engineering problem. This repository makes those failure modes executable.
 
@@ -37,8 +37,16 @@ The system deliberately promises **at-least-once delivery with idempotent proces
 
 ## Run locally
 
+```powershell
+# PowerShell as Administrator, once per machine
+.\scripts\setup-native.ps1
+Start-Service postgresql-x64-16
+Start-Service RabbitMQ
+```
+
+This project intentionally uses native services, not Docker. PostgreSQL and RabbitMQ remain real infrastructure; no embedded queue or SQLite substitute is used.
+
 ```bash
-docker compose up -d db rabbitmq
 cd backend
 python -m venv .venv
 # PowerShell: .\.venv\Scripts\Activate.ps1
