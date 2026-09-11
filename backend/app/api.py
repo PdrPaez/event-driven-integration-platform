@@ -64,7 +64,9 @@ async def replay(dead_letter_id:UUID,s=Depends(db)):
     if dl.status not in {"open","replay_requested"}: raise HTTPException(409,{"code":"replay_not_allowed"})
     processed=(await s.execute(select(Inbox).where(Inbox.consumer_name==dl.connector,Inbox.event_id==dl.event_id))).scalar_one_or_none()
     if processed: raise HTTPException(409,{"code":"already_processed"})
-    dl.status="replay_requested"; row=Outbox(event_id=dl.event_id,routing_key="order.created"); s.add(row); await s.commit()
+    source_event=await s.get(Event,dl.event_id)
+    if not source_event: raise HTTPException(409,{"code":"replay_not_allowed","message":"source event is missing"})
+    dl.status="replay_requested"; row=Outbox(event_id=dl.event_id,routing_key=source_event.event_type); s.add(row); await s.commit()
     return {"dead_letter_id":str(dl.id),"replay_outbox_id":str(row.id),"event_id":str(dl.event_id),"connector":dl.connector,"status":dl.status}
 @router.get("/connectors")
 async def connectors(s=Depends(db)): return [{"id":k,"display_name":k.title(),"subscribed_event_types":v,"failure_mode":(await s.get(FailureMode,k)).mode if await s.get(FailureMode,k) else "none","queue_name":f"connector.{k}","retry_policy":"3 attempts; 250ms/500ms backoff"} for k,v in SUBSCRIPTIONS.items()]

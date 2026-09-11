@@ -21,7 +21,7 @@ async def dispatcher(channel):
     exchange=await channel.get_exchange(EXCHANGE); worker=socket.gethostname()+"-dispatcher"
     while True:
         async with Session() as s:
-            rows=(await s.execute(select(Outbox).where(Outbox.status.in_(["pending","publishing"]),Outbox.next_attempt_at<=now()).limit(20))).scalars().all()
+            rows=(await s.execute(select(Outbox).where(Outbox.status.in_(["pending","publishing"]),Outbox.next_attempt_at<=now()).with_for_update(skip_locked=True).limit(20))).scalars().all()
             for row in rows:
                 row.status="publishing"; row.locked_by=worker; row.locked_until=now()+timedelta(seconds=30); row.attempts+=1; await s.commit(); ev=await s.get(Event,row.event_id)
                 body={"event_id":str(ev.event_id),"event_type":ev.event_type,"schema_version":ev.schema_version,"occurred_at":ev.occurred_at.isoformat(),"producer":ev.producer,"aggregate_type":ev.aggregate_type,"aggregate_id":ev.aggregate_id,"correlation_id":str(ev.correlation_id),"payload":ev.payload}
