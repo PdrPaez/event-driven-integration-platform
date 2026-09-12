@@ -40,7 +40,7 @@ The system deliberately promises **at-least-once delivery with idempotent proces
 ```powershell
 # PowerShell as Administrator, once per machine
 .\scripts\setup-native.ps1
-Start-Service postgresql-x64-16
+.scripts\configure-postgres.ps1
 Start-Service RabbitMQ
 ```
 
