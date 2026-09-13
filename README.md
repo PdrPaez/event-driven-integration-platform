@@ -77,7 +77,7 @@ RabbitMQ management is optional at http://localhost:15672 (guest/guest). Create 
 
 ## Schema, webhook and evaluation
 
-`customer.updated` v1 is validated and explicitly upcast to v2 with `email_verified=false`; future versions are rejected as schema errors. The mock commerce signer is runnable with `python -m app.webhook.send_demo`. The deterministic evaluation command is `python -m app.evaluation.run` and enumerates the 15 required scenarios from the master specification.
+`customer.updated` v1 is validated and explicitly upcast to v2 with `email_verified=false`; future versions are rejected as schema errors. The mock commerce signer is runnable with `python -m app.webhook.send_demo`. The deterministic evaluation command is `python -m app.evaluation.run` and covers 15 deterministic integration and reliability scenarios.
 
 ## Roadmap
 
