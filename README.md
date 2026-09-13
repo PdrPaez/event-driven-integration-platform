@@ -90,4 +90,4 @@ RabbitMQ management is optional at http://localhost:15672 (guest/guest). Create 
 
 Not a generic iPaaS, workflow engine, Kafka tutorial, connector marketplace, ETL runtime, distributed transaction system or exactly-once platform. PostgreSQL and RabbitMQ are intentionally sufficient to make the delivery trade-offs inspectable.
 
-See [docs/decisions.md](docs/decisions.md) and [event-driven-integration-platform-master-spec.md](event-driven-integration-platform-master-spec.md) for the complete design record.
+See [docs/decisions.md](docs/decisions.md) for the documented architectural decisions and trade-offs.
