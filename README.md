@@ -1,5 +1,7 @@
 # Event-Driven Integration Platform
 
+[![CI](https://github.com/PdrPaez/event-driven-integration-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/PdrPaez/event-driven-integration-platform/actions/workflows/ci.yml)
+
 A local reference implementation of reliable event-driven integrations using native PostgreSQL 16, RabbitMQ, a transactional outbox, idempotent consumers, bounded retries, dead letters, replay, signed webhook ingress, schema evolution and a real XYFlow delivery canvas.
 
 Publishing a message is easy. Preserving a business event through database commits, broker failures, duplicate delivery, external side effects, retries, poison messages and schema changes is the engineering problem. This repository makes those failure modes executable.
@@ -40,7 +42,7 @@ The system deliberately promises **at-least-once delivery with idempotent proces
 ```powershell
 # PowerShell as Administrator, once per machine
 .\scripts\setup-native.ps1
-.scripts\configure-postgres.ps1
+.\scripts\configure-postgres.ps1
 Start-Service RabbitMQ
 ```
 
@@ -79,7 +81,7 @@ RabbitMQ management is optional at http://localhost:15672 (guest/guest). Create 
 
 ## Roadmap
 
-1. Foundation: Compose, typed envelope, PostgreSQL models and API.
+1. Foundation: native infrastructure, typed event envelope, PostgreSQL models and API.
 2. Delivery: outbox leases, publisher confirms, durable topic topology and manual-ACK workers.
 3. Reliability: inbox deduplication, connector idempotency, failure taxonomy, bounded retry and DLQ.
 4. Recovery and boundaries: durable replay, HMAC webhook dedupe, schema upcasting and trace persistence.
